@@ -1,17 +1,33 @@
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusBadge, type BadgeStatus } from "@/components/StatusBadge/StatusBadge";
+import type { FileStatusMap } from "@/hooks/useTransfer";
 import { formatBytes, formatDate } from "@/lib/client/formatters";
+import type { SourceFile } from "@/types/transfer";
 
-function resolveStatus(file, statusByFileId) {
+interface SourceFileTableProps {
+  files: SourceFile[];
+  selectedIds: ReadonlySet<string>;
+  statusByFileId: FileStatusMap;
+  onToggle: (fileId: string) => void;
+  onToggleAll: (files: SourceFile[], shouldSelect: boolean) => void;
+  isDisabled: boolean;
+}
+
+function resolveStatus(file: SourceFile, statusByFileId: FileStatusMap): BadgeStatus {
   if (!file.isTransferable) {
     return "unsupported";
   }
   return statusByFileId[file.id] ?? "idle";
 }
 
-/**
- * Tabela dos arquivos do Google Drive com seleção por checkbox.
- */
-export function SourceFileTable({ files, selectedIds, statusByFileId, onToggle, onToggleAll, isDisabled }) {
+/** Tabela dos arquivos do Google Drive com seleção por checkbox. */
+export function SourceFileTable({
+  files,
+  selectedIds,
+  statusByFileId,
+  onToggle,
+  onToggleAll,
+  isDisabled,
+}: SourceFileTableProps) {
   const transferableFiles = files.filter((file) => file.isTransferable);
   const isAllSelected =
     transferableFiles.length > 0 && transferableFiles.every((file) => selectedIds.has(file.id));

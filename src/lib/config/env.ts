@@ -5,12 +5,28 @@ import { ConfigurationError } from "@/lib/errors/appErrors";
 const CONTAINER_NAME_PATTERN = /^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/;
 const DRIVE_FOLDER_ID_PATTERN = /^[A-Za-z0-9_-]{10,}$/;
 
-function readOptional(name) {
-  const value = process.env[name];
-  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
+export interface ServiceAccountCredentials {
+  client_email: string;
+  private_key: string;
 }
 
-function readRequired(name) {
+export interface GoogleConfig {
+  folderId: string;
+  credentials: ServiceAccountCredentials;
+}
+
+export interface AzureConfig {
+  connectionString: string | null;
+  sasUrl: string | null;
+  containerName: string;
+}
+
+function readOptional(name: string): string | null {
+  const value = process.env[name]?.trim();
+  return value ? value : null;
+}
+
+function readRequired(name: string): string {
   const value = readOptional(name);
   if (!value) {
     throw new ConfigurationError(`A variável de ambiente ${name} não foi definida.`);
@@ -18,28 +34,40 @@ function readRequired(name) {
   return value;
 }
 
-function decodeServiceAccount(base64Value) {
-  try {
-    const json = Buffer.from(base64Value, "base64").toString("utf8");
-    const credentials = JSON.parse(json);
-
-    if (!credentials.client_email || !credentials.private_key) {
-      throw new Error("campos client_email/private_key ausentes");
-    }
-
-    return credentials;
-  } catch (error) {
-    throw new ConfigurationError(
-      `GOOGLE_SERVICE_ACCOUNT_BASE64 é inválida: ${error.message}.`,
-    );
+function isServiceAccountCredentials(value: unknown): value is ServiceAccountCredentials {
+  if (typeof value !== "object" || value === null) {
+    return false;
   }
+
+  const { client_email: email, private_key: key } = value as Record<string, unknown>;
+  return typeof email === "string" && email !== "" && typeof key === "string" && key !== "";
 }
 
 /**
- * Lê e valida as configurações do Google Drive.
- * @returns {{ folderId: string, credentials: { client_email: string, private_key: string } }}
+ * Decodifica o JSON da Service Account e mantém apenas os campos necessários.
  */
-export function getGoogleConfig() {
+function decodeServiceAccount(base64Value: string): ServiceAccountCredentials {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(Buffer.from(base64Value, "base64").toString("utf8"));
+  } catch {
+    throw new ConfigurationError(
+      "GOOGLE_SERVICE_ACCOUNT_BASE64 é inválida: o conteúdo não é um JSON em Base64.",
+    );
+  }
+
+  if (!isServiceAccountCredentials(parsed)) {
+    throw new ConfigurationError(
+      "GOOGLE_SERVICE_ACCOUNT_BASE64 é inválida: campos client_email/private_key ausentes.",
+    );
+  }
+
+  return { client_email: parsed.client_email, private_key: parsed.private_key };
+}
+
+/** Lê e valida as configurações do Google Drive. */
+export function getGoogleConfig(): GoogleConfig {
   const folderId = readRequired("GOOGLE_DRIVE_FOLDER_ID");
 
   if (!DRIVE_FOLDER_ID_PATTERN.test(folderId)) {
@@ -52,11 +80,8 @@ export function getGoogleConfig() {
   };
 }
 
-/**
- * Lê e valida as configurações do Azure Blob Storage.
- * @returns {{ connectionString: string | null, sasUrl: string | null, containerName: string }}
- */
-export function getAzureConfig() {
+/** Lê e valida as configurações do Azure Blob Storage. */
+export function getAzureConfig(): AzureConfig {
   const connectionString = readOptional("AZURE_STORAGE_CONNECTION_STRING");
   const sasUrl = readOptional("AZURE_STORAGE_SAS_URL");
   const containerName = readRequired("AZURE_STORAGE_CONTAINER_NAME");

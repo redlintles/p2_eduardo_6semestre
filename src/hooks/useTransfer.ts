@@ -2,66 +2,94 @@
 
 import { useCallback, useState } from "react";
 
-import { LOG_LEVELS } from "@/hooks/useTransferLog";
+import type { AddLogEntry, LogLevel } from "@/hooks/useTransferLog";
 import { API_ROUTES, apiClient } from "@/lib/client/apiClient";
+import type {
+  TransferOutcome,
+  TransferResult,
+  TransferStatus,
+  TransferSummary,
+} from "@/types/transfer";
 
-const RESULT_LOG = Object.freeze({
+export type FileStatusMap = Readonly<Partial<Record<string, TransferStatus>>>;
+
+interface ResultLogFormat {
+  level: LogLevel;
+  format: (result: TransferResult) => string;
+}
+
+const RESULT_LOG: Readonly<Record<TransferStatus, ResultLogFormat>> = {
   success: {
-    level: LOG_LEVELS.success,
+    level: "success",
     format: (result) => `SUCESSO "${result.fileName}" → ${result.blobName}`,
   },
   skipped: {
-    level: LOG_LEVELS.skipped,
+    level: "skipped",
     format: (result) => `IGNORADO "${result.fileName}": ${result.message}`,
   },
   error: {
-    level: LOG_LEVELS.error,
+    level: "error",
     format: (result) => `ERRO "${result.fileName}": ${result.message}`,
   },
-});
+};
 
-function formatSummary({ total, succeeded, skipped, failed }) {
+function formatSummary({ total, succeeded, skipped, failed }: TransferSummary): string {
   return (
     `Concluído: ${total} arquivo(s) processado(s) — ` +
     `${succeeded} enviado(s), ${skipped} ignorado(s) por já existirem, ${failed} com erro.`
   );
 }
 
-/**
- * Dispara a transferência no servidor e registra cada resultado no console.
- * @param {{ addEntry: (level: string, text: string) => void, onFinished: () => void }} params
- */
-export function useTransfer({ addEntry, onFinished }) {
+function toMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Erro desconhecido.";
+}
+
+interface UseTransferParams {
+  addEntry: AddLogEntry;
+  onFinished: () => void;
+}
+
+export interface TransferController {
+  transfer: (fileIds: string[] | null) => Promise<void>;
+  isTransferring: boolean;
+  statusByFileId: FileStatusMap;
+}
+
+/** Dispara a transferência no servidor e registra cada resultado no console. */
+export function useTransfer({ addEntry, onFinished }: UseTransferParams): TransferController {
   const [isTransferring, setIsTransferring] = useState(false);
-  const [statusByFileId, setStatusByFileId] = useState({});
+  const [statusByFileId, setStatusByFileId] = useState<FileStatusMap>({});
 
   const logResults = useCallback(
-    ({ results, summary }) => {
+    ({ results, summary }: TransferOutcome) => {
       results.forEach((result) => {
-        const { level, format } = RESULT_LOG[result.status] ?? RESULT_LOG.error;
+        const { level, format } = RESULT_LOG[result.status];
         addEntry(level, format(result));
       });
 
-      addEntry(LOG_LEVELS.info, formatSummary(summary));
+      addEntry("info", formatSummary(summary));
     },
     [addEntry],
   );
 
   const transfer = useCallback(
-    async (fileIds) => {
+    async (fileIds: string[] | null) => {
       const label = fileIds ? `${fileIds.length} arquivo(s) selecionado(s)` : "todos os arquivos";
       setIsTransferring(true);
       setStatusByFileId({});
-      addEntry(LOG_LEVELS.info, `Iniciando transferência de ${label}...`);
+      addEntry("info", `Iniciando transferência de ${label}...`);
 
       try {
-        const outcome = await apiClient.post(API_ROUTES.transfer, fileIds ? { fileIds } : {});
+        const outcome = await apiClient.post<TransferOutcome>(
+          API_ROUTES.transfer,
+          fileIds ? { fileIds } : {},
+        );
         logResults(outcome);
         setStatusByFileId(
           Object.fromEntries(outcome.results.map((result) => [result.fileId, result.status])),
         );
       } catch (error) {
-        addEntry(LOG_LEVELS.error, `A transferência falhou: ${error.message}`);
+        addEntry("error", `A transferência falhou: ${toMessage(error)}`);
       } finally {
         setIsTransferring(false);
         onFinished();

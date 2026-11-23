@@ -1,6 +1,20 @@
-/**
- * Painel com cabeçalho, ações e estados de carregamento/erro/vazio.
- */
+import type { ReactNode } from "react";
+
+interface PanelStateProps {
+  isLoading: boolean;
+  error: string | null;
+  isEmpty: boolean;
+  emptyMessage: string;
+  children: ReactNode;
+}
+
+interface FilePanelProps extends PanelStateProps {
+  title: string;
+  subtitle: string;
+  actions: ReactNode;
+}
+
+/** Painel com cabeçalho, ações e estados de carregamento/erro/vazio. */
 export function FilePanel({
   title,
   subtitle,
@@ -10,7 +24,7 @@ export function FilePanel({
   isEmpty,
   emptyMessage,
   children,
-}) {
+}: FilePanelProps) {
   return (
     <section className="file-panel" aria-busy={isLoading}>
       <header className="file-panel__header">
@@ -35,7 +49,7 @@ export function FilePanel({
   );
 }
 
-function PanelContent({ isLoading, error, isEmpty, emptyMessage, children }) {
+function PanelContent({ isLoading, error, isEmpty, emptyMessage, children }: PanelStateProps) {
   if (isLoading) {
     return <p className="file-panel__feedback">Carregando...</p>;
   }

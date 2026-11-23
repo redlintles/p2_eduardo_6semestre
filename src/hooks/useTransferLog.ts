@@ -2,23 +2,31 @@
 
 import { useCallback, useRef, useState } from "react";
 
-export const LOG_LEVELS = Object.freeze({
-  info: "info",
-  success: "success",
-  skipped: "skipped",
-  error: "error",
-});
+export type LogLevel = "info" | "success" | "skipped" | "error";
 
-/**
- * Mantém as linhas exibidas no console de transferências da interface.
- */
-export function useTransferLog() {
-  const [entries, setEntries] = useState([]);
+export interface LogEntry {
+  id: number;
+  level: LogLevel;
+  text: string;
+  createdAt: Date;
+}
+
+export type AddLogEntry = (level: LogLevel, text: string) => void;
+
+export interface TransferLog {
+  entries: LogEntry[];
+  addEntry: AddLogEntry;
+  clear: () => void;
+}
+
+/** Mantém as linhas exibidas no console de transferências da interface. */
+export function useTransferLog(): TransferLog {
+  const [entries, setEntries] = useState<LogEntry[]>([]);
   const nextId = useRef(0);
 
-  const addEntry = useCallback((level, text) => {
+  const addEntry = useCallback<AddLogEntry>((level, text) => {
     nextId.current += 1;
-    const entry = { id: nextId.current, level, text, createdAt: new Date() };
+    const entry: LogEntry = { id: nextId.current, level, text, createdAt: new Date() };
     setEntries((previous) => [...previous, entry]);
   }, []);
 

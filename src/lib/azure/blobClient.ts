@@ -1,24 +1,27 @@
 import "server-only";
 
-import { BlobServiceClient } from "@azure/storage-blob";
+import { BlobServiceClient, type ContainerClient } from "@azure/storage-blob";
 
-import { getAzureConfig } from "@/lib/config/env";
+import { getAzureConfig, type AzureConfig } from "@/lib/config/env";
+import { ConfigurationError } from "@/lib/errors/appErrors";
 
-let cachedContainer = null;
+let cachedContainer: ContainerClient | null = null;
 
-function createServiceClient({ connectionString, sasUrl }) {
+function createServiceClient({ connectionString, sasUrl }: AzureConfig): BlobServiceClient {
   if (connectionString) {
     return BlobServiceClient.fromConnectionString(connectionString);
   }
-  return new BlobServiceClient(sasUrl);
+  if (sasUrl) {
+    return new BlobServiceClient(sasUrl);
+  }
+  throw new ConfigurationError("Nenhuma credencial do Azure foi configurada.");
 }
 
 /**
  * Retorna o cliente do contêiner de destino, autenticado pela
  * Connection String (preferencial) ou pela SAS URL.
- * @returns {import("@azure/storage-blob").ContainerClient}
  */
-export function getContainerClient() {
+export function getContainerClient(): ContainerClient {
   if (cachedContainer) {
     return cachedContainer;
   }
@@ -28,9 +31,7 @@ export function getContainerClient() {
   return cachedContainer;
 }
 
-/**
- * Garante que o contêiner exista. Ele é criado privado (sem acesso público).
- */
-export async function ensureContainerExists() {
+/** Garante que o contêiner exista. Ele é criado privado (sem acesso público). */
+export async function ensureContainerExists(): Promise<void> {
   await getContainerClient().createIfNotExists();
 }

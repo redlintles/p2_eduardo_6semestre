@@ -1,5 +1,6 @@
-const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB"];
+const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
 const BYTES_PER_UNIT = 1024;
+const EMPTY_VALUE = "—";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
@@ -9,9 +10,9 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 const timeFormatter = new Intl.DateTimeFormat("pt-BR", { timeStyle: "medium" });
 
 /** Formata um tamanho em bytes de forma legível (ex.: 1,5 MB). */
-export function formatBytes(bytes) {
-  if (bytes === null || bytes === undefined) {
-    return "—";
+export function formatBytes(bytes: number | null): string {
+  if (bytes === null) {
+    return EMPTY_VALUE;
   }
 
   let value = bytes;
@@ -22,15 +23,16 @@ export function formatBytes(bytes) {
   }
 
   const digits = unitIndex === 0 ? 0 : 1;
-  return `${value.toLocaleString("pt-BR", { maximumFractionDigits: digits })} ${BYTE_UNITS[unitIndex]}`;
+  const formatted = value.toLocaleString("pt-BR", { maximumFractionDigits: digits });
+  return `${formatted} ${BYTE_UNITS[unitIndex]}`;
 }
 
 /** Formata uma data ISO no padrão brasileiro. */
-export function formatDate(isoDate) {
-  return isoDate ? dateFormatter.format(new Date(isoDate)) : "—";
+export function formatDate(isoDate: string | null): string {
+  return isoDate ? dateFormatter.format(new Date(isoDate)) : EMPTY_VALUE;
 }
 
-/** Formata o horário atual para o console de transferências. */
-export function formatTime(date) {
+/** Formata um horário para o console de transferências. */
+export function formatTime(date: Date): string {
   return timeFormatter.format(date);
 }

@@ -1,13 +1,15 @@
-const VARIANTS = new Set(["primary", "secondary", "ghost", "inverse"]);
+import type { ButtonHTMLAttributes } from "react";
 
-/**
- * Botão padrão. A variante é aplicada como modificador BEM (button--primary).
- */
-export function Button({ variant = "secondary", type = "button", children, ...props }) {
-  const modifier = VARIANTS.has(variant) ? variant : "secondary";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "inverse";
 
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> {
+  variant?: ButtonVariant;
+}
+
+/** Botão padrão. A variante é aplicada como modificador BEM (button--primary). */
+export function Button({ variant = "secondary", type = "button", children, ...props }: ButtonProps) {
   return (
-    <button type={type} className={`button button--${modifier}`} {...props}>
+    <button type={type} className={`button button--${variant}`} {...props}>
       {children}
     </button>
   );

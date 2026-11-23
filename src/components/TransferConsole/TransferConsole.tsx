@@ -3,13 +3,17 @@
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/Button/Button";
+import type { LogEntry } from "@/hooks/useTransferLog";
 import { formatTime } from "@/lib/client/formatters";
 
-/**
- * Console que exibe o status de cada transferência (sucesso ou erro).
- */
-export function TransferConsole({ entries, onClear }) {
-  const outputRef = useRef(null);
+interface TransferConsoleProps {
+  entries: LogEntry[];
+  onClear: () => void;
+}
+
+/** Console que exibe o status de cada transferência (sucesso, ignorado ou erro). */
+export function TransferConsole({ entries, onClear }: TransferConsoleProps) {
+  const outputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const output = outputRef.current;

@@ -3,27 +3,29 @@
  * detalhes internos ficam apenas no log do servidor.
  */
 export class AppError extends Error {
-  constructor(message, statusCode = 500) {
+  readonly statusCode: number;
+
+  constructor(message: string, statusCode = 500) {
     super(message);
-    this.name = this.constructor.name;
+    this.name = new.target.name;
     this.statusCode = statusCode;
   }
 }
 
 export class ConfigurationError extends AppError {
-  constructor(message) {
+  constructor(message: string) {
     super(message, 500);
   }
 }
 
 export class ValidationError extends AppError {
-  constructor(message) {
+  constructor(message: string) {
     super(message, 400);
   }
 }
 
 export class SourceFolderAccessError extends AppError {
-  constructor(serviceAccountEmail) {
+  constructor(serviceAccountEmail: string) {
     super(
       `A pasta de origem não foi encontrada ou não foi compartilhada com ${serviceAccountEmail}. ` +
         "Compartilhe a pasta com esse e-mail como Leitor.",
@@ -33,7 +35,7 @@ export class SourceFolderAccessError extends AppError {
 }
 
 export class ExternalServiceError extends AppError {
-  constructor(serviceName, cause) {
+  constructor(serviceName: string, cause: unknown) {
     super(`Falha na comunicação com ${serviceName}.`, 502);
     this.cause = cause;
   }

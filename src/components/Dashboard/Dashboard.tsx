@@ -11,15 +11,14 @@ import { useRemoteList } from "@/hooks/useRemoteList";
 import { useTransfer } from "@/hooks/useTransfer";
 import { useTransferLog } from "@/hooks/useTransferLog";
 import { API_ROUTES } from "@/lib/client/apiClient";
+import type { DestinationFile, SourceFile } from "@/types/transfer";
 
-/**
- * Tela principal: origem (Drive), destino (Blob) e console de transferências.
- */
+/** Tela principal: origem (Drive), destino (Blob) e console de transferências. */
 export function Dashboard() {
-  const source = useRemoteList(API_ROUTES.source);
-  const destination = useRemoteList(API_ROUTES.destination);
+  const source = useRemoteList<SourceFile>(API_ROUTES.source);
+  const destination = useRemoteList<DestinationFile>(API_ROUTES.destination);
   const log = useTransferLog();
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set());
   const { reload: reloadDestination } = destination;
 
   const handleTransferFinished = useCallback(() => {
@@ -39,7 +38,7 @@ export function Dashboard() {
 
   const hasTransferableFiles = source.items.some((file) => file.isTransferable);
 
-  const toggleFile = useCallback((fileId) => {
+  const toggleFile = useCallback((fileId: string) => {
     setSelectedIds((previous) => {
       const next = new Set(previous);
       if (next.has(fileId)) {
@@ -51,7 +50,7 @@ export function Dashboard() {
     });
   }, []);
 
-  const toggleAll = useCallback((files, shouldSelect) => {
+  const toggleAll = useCallback((files: SourceFile[], shouldSelect: boolean) => {
     setSelectedIds(shouldSelect ? new Set(files.map((file) => file.id)) : new Set());
   }, []);
 

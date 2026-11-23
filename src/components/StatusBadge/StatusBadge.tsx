@@ -1,17 +1,20 @@
-const LABELS = Object.freeze({
+import type { TransferStatus } from "@/types/transfer";
+
+export type BadgeStatus = TransferStatus | "unsupported" | "idle";
+
+const LABELS: Readonly<Record<BadgeStatus, string>> = {
   success: "Copiado",
   skipped: "Já existe",
   error: "Erro",
   unsupported: "Não suportado",
   idle: "Pendente",
-});
+};
 
-/**
- * Indica o status de transferência de um arquivo.
- * @param {{ status: keyof typeof LABELS }} props
- */
-export function StatusBadge({ status }) {
-  const safeStatus = status in LABELS ? status : "idle";
+interface StatusBadgeProps {
+  status: BadgeStatus;
+}
 
-  return <span className={`status-badge status-badge--${safeStatus}`}>{LABELS[safeStatus]}</span>;
+/** Indica o status de transferência de um arquivo. */
+export function StatusBadge({ status }: StatusBadgeProps) {
+  return <span className={`status-badge status-badge--${status}`}>{LABELS[status]}</span>;
 }

@@ -2,7 +2,7 @@ import "server-only";
 
 const PREFIX = "[drive-to-blob]";
 
-function timestamp() {
+function timestamp(): string {
   return new Date().toISOString();
 }
 
@@ -11,16 +11,16 @@ function timestamp() {
  * Nunca registra credenciais, apenas nomes e identificadores de arquivos.
  */
 export const transferLogger = {
-  info(message) {
-    console.log(`${PREFIX} ${timestamp()} INFO    ${message}`);
+  info(message: string): void {
+    console.log(`${PREFIX} ${timestamp()} INFO     ${message}`);
   },
-  success(fileName, destination) {
-    console.log(`${PREFIX} ${timestamp()} SUCESSO "${fileName}" -> ${destination}`);
+  success(fileName: string, destination: string): void {
+    console.log(`${PREFIX} ${timestamp()} SUCESSO  "${fileName}" -> ${destination}`);
   },
-  skipped(fileName, reason) {
+  skipped(fileName: string, reason: string): void {
     console.warn(`${PREFIX} ${timestamp()} IGNORADO "${fileName}": ${reason}`);
   },
-  failure(fileName, reason) {
-    console.error(`${PREFIX} ${timestamp()} ERRO    "${fileName}": ${reason}`);
+  failure(fileName: string, reason: string): void {
+    console.error(`${PREFIX} ${timestamp()} ERRO     "${fileName}": ${reason}`);
   },
 };

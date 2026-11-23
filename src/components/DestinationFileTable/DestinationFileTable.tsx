@@ -1,9 +1,12 @@
 import { formatBytes, formatDate } from "@/lib/client/formatters";
+import type { DestinationFile } from "@/types/transfer";
 
-/**
- * Tabela dos blobs presentes no contêiner de destino.
- */
-export function DestinationFileTable({ files }) {
+interface DestinationFileTableProps {
+  files: DestinationFile[];
+}
+
+/** Tabela dos blobs presentes no contêiner de destino. */
+export function DestinationFileTable({ files }: DestinationFileTableProps) {
   return (
     <table className="file-table">
       <thead className="file-table__head">

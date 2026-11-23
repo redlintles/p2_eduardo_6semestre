@@ -3,7 +3,12 @@
  * não possuem conteúdo binário próprio: precisam ser exportados para um
  * formato convencional antes de serem copiados.
  */
-const EXPORT_FORMATS = Object.freeze({
+export interface ExportFormat {
+  mimeType: string;
+  extension: string;
+}
+
+const EXPORT_FORMATS: Readonly<Record<string, ExportFormat>> = Object.freeze({
   "application/vnd.google-apps.document": {
     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     extension: ".docx",
@@ -24,14 +29,10 @@ const EXPORT_FORMATS = Object.freeze({
 
 const GOOGLE_APPS_PREFIX = "application/vnd.google-apps.";
 
-export function isGoogleWorkspaceFile(mimeType) {
+export function isGoogleWorkspaceFile(mimeType: string): boolean {
   return mimeType.startsWith(GOOGLE_APPS_PREFIX);
 }
 
-/**
- * @param {string} mimeType
- * @returns {{ mimeType: string, extension: string } | null}
- */
-export function getExportFormat(mimeType) {
+export function getExportFormat(mimeType: string): ExportFormat | null {
   return EXPORT_FORMATS[mimeType] ?? null;
 }

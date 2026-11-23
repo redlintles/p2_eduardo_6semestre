@@ -4,25 +4,38 @@ import { useCallback, useEffect, useState } from "react";
 
 import { apiClient } from "@/lib/client/apiClient";
 
-const INITIAL_STATE = { items: [], isLoading: true, error: null };
+interface RemoteListState<T> {
+  items: T[];
+  isLoading: boolean;
+  error: string | null;
+}
 
-/**
- * Busca uma lista na API e expõe estado de carregamento, erro e recarga.
- * @param {string} endpoint
- */
-export function useRemoteList(endpoint) {
-  const [state, setState] = useState(INITIAL_STATE);
+export interface RemoteList<T> extends RemoteListState<T> {
+  reload: () => void;
+}
+
+function toMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Erro desconhecido.";
+}
+
+/** Busca uma lista na API e expõe estado de carregamento, erro e recarga. */
+export function useRemoteList<T>(endpoint: string): RemoteList<T> {
+  const [state, setState] = useState<RemoteListState<T>>({
+    items: [],
+    isLoading: true,
+    error: null,
+  });
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
 
     apiClient
-      .get(endpoint, { signal: controller.signal })
+      .get<T[]>(endpoint, { signal: controller.signal })
       .then((items) => setState({ items, isLoading: false, error: null }))
-      .catch((error) => {
-        if (error.name !== "AbortError") {
-          setState((previous) => ({ ...previous, isLoading: false, error: error.message }));
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          setState((previous) => ({ ...previous, isLoading: false, error: toMessage(error) }));
         }
       });
 
