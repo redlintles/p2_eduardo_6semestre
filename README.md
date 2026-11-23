@@ -11,7 +11,8 @@ Aplicação web em **Next.js** que copia os arquivos de uma pasta do **Google Dr
 - **Listagem da origem**: arquivos da pasta configurada do Drive (`GET /api/source`).
 - **Listagem do destino**: blobs do contêiner (`GET /api/destination`).
 - **Transferência** de todos os arquivos ou apenas dos selecionados (`POST /api/transfer`), em streaming e com até 3 cópias em paralelo.
-- **Status de cada transferência** (sucesso ou erro) no console do servidor e no console da interface.
+- **Status de cada transferência** (sucesso, ignorado ou erro) no console do servidor e no console da interface.
+- **Sem sobrescrita**: arquivos que já existem no contêiner são ignorados, com o motivo indicado no console.
 - Exportação automática de arquivos nativos do Google: Docs → `.docx`, Planilhas → `.xlsx`, Apresentações → `.pptx`, Desenhos → `.png`.
 - Criação automática do contêiner (privado) caso ele não exista.
 
@@ -106,10 +107,20 @@ O código que acessa credenciais fica em módulos marcados com `import "server-o
 
    ```
    [drive-to-blob] 2026-11-23T22:10:01.120Z INFO    Iniciando transferência de 3 arquivo(s).
+   [drive-to-blob] 2026-11-23T22:10:01.540Z IGNORADO "notas.pdf": Já existe um arquivo chamado "notas.pdf" no contêiner de destino. Nada foi enviado.
    [drive-to-blob] 2026-11-23T22:10:02.481Z SUCESSO "relatorio.pdf" -> https://<conta>.blob.core.windows.net/aluno-redlint/relatorio.pdf
    [drive-to-blob] 2026-11-23T22:10:02.913Z ERRO    "planilha": Insufficient permissions (código 403)
-   [drive-to-blob] 2026-11-23T22:10:02.914Z INFO    Concluído: 2 sucesso(s), 1 erro(s).
+   [drive-to-blob] 2026-11-23T22:10:02.914Z INFO    Concluído: 1 enviado(s), 1 ignorado(s), 1 erro(s).
    ```
+
+### Arquivos repetidos
+
+A aplicação nunca sobrescreve um blob existente:
+
+- **O blob já existe no contêiner**: o arquivo é ignorado (status "Já existe") e nada é enviado. Para enviar uma versão nova, apague o blob antigo no Azure primeiro.
+- **Dois arquivos diferentes com o mesmo nome no Drive** (o Drive permite isso): o primeiro é enviado e os demais são ignorados, com uma mensagem explicando o motivo.
+
+O envio usa a condição `If-None-Match: *` do Azure. Assim, mesmo que outro processo crie o blob durante a cópia, o Azure recusa a gravação em vez de sobrescrever.
 
 ## API
 
@@ -135,14 +146,14 @@ Corpo opcional. Sem corpo (ou `{}`) copia todos os arquivos; com `fileIds`, copi
 { "fileIds": ["1AbC...", "1XyZ..."] }
 ```
 
-Os IDs são conferidos com a listagem da pasta: o servidor recusa arquivos que não pertencem à origem.
+O `status` de cada resultado é `success`, `skipped` (já existia no destino) ou `error`. Os IDs são conferidos com a listagem da pasta: o servidor recusa arquivos que não pertencem à origem.
 
 ```json
 {
   "ok": true,
   "data": {
     "results": [{ "fileId": "1AbC...", "fileName": "notas.docx", "status": "success", "message": "Transferido com sucesso.", "blobName": "notas.docx" }],
-    "summary": { "total": 1, "succeeded": 1, "failed": 0 }
+    "summary": { "total": 1, "succeeded": 1, "skipped": 0, "failed": 0 }
   }
 }
 ```
@@ -168,7 +179,7 @@ A rota de transferência declara `maxDuration = 300` segundos. Pastas muito gran
 ## Limitações conhecidas
 
 - Subpastas do Drive não são percorridas; apenas os arquivos do primeiro nível são copiados.
-- Arquivos com o mesmo nome sobrescrevem o blob existente.
+- Arquivos já presentes no contêiner não são atualizados, mesmo que tenham mudado no Drive.
 - Exportações de arquivos nativos do Google são limitadas a 10 MB pela API do Drive.
 - Formulários, sites e mapas do Google não podem ser exportados e aparecem como "Não suportado".
 
