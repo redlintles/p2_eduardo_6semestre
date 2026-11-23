@@ -1,5 +1,6 @@
 const LABELS = Object.freeze({
   success: "Copiado",
+  skipped: "Já existe",
   error: "Erro",
   unsupported: "Não suportado",
   idle: "Pendente",

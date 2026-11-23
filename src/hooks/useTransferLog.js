@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 export const LOG_LEVELS = Object.freeze({
   info: "info",
   success: "success",
+  skipped: "skipped",
   error: "error",
 });
 

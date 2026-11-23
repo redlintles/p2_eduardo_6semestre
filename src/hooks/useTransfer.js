@@ -5,6 +5,28 @@ import { useCallback, useState } from "react";
 import { LOG_LEVELS } from "@/hooks/useTransferLog";
 import { API_ROUTES, apiClient } from "@/lib/client/apiClient";
 
+const RESULT_LOG = Object.freeze({
+  success: {
+    level: LOG_LEVELS.success,
+    format: (result) => `SUCESSO "${result.fileName}" → ${result.blobName}`,
+  },
+  skipped: {
+    level: LOG_LEVELS.skipped,
+    format: (result) => `IGNORADO "${result.fileName}": ${result.message}`,
+  },
+  error: {
+    level: LOG_LEVELS.error,
+    format: (result) => `ERRO "${result.fileName}": ${result.message}`,
+  },
+});
+
+function formatSummary({ total, succeeded, skipped, failed }) {
+  return (
+    `Concluído: ${total} arquivo(s) processado(s) — ` +
+    `${succeeded} enviado(s), ${skipped} ignorado(s) por já existirem, ${failed} com erro.`
+  );
+}
+
 /**
  * Dispara a transferência no servidor e registra cada resultado no console.
  * @param {{ addEntry: (level: string, text: string) => void, onFinished: () => void }} params
@@ -16,17 +38,11 @@ export function useTransfer({ addEntry, onFinished }) {
   const logResults = useCallback(
     ({ results, summary }) => {
       results.forEach((result) => {
-        const isSuccess = result.status === "success";
-        const text = isSuccess
-          ? `SUCESSO "${result.fileName}" → ${result.blobName}`
-          : `ERRO "${result.fileName}": ${result.message}`;
-        addEntry(isSuccess ? LOG_LEVELS.success : LOG_LEVELS.error, text);
+        const { level, format } = RESULT_LOG[result.status] ?? RESULT_LOG.error;
+        addEntry(level, format(result));
       });
 
-      addEntry(
-        LOG_LEVELS.info,
-        `Concluído: ${summary.succeeded} de ${summary.total} arquivo(s) copiados, ${summary.failed} com erro.`,
-      );
+      addEntry(LOG_LEVELS.info, formatSummary(summary));
     },
     [addEntry],
   );

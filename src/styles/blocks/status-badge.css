@@ -10,6 +10,10 @@
   @apply bg-success-50 text-success-600;
 }
 
+.status-badge--skipped {
+  @apply bg-amber-50 text-amber-700;
+}
+
 .status-badge--error {
   @apply bg-danger-50 text-danger-600;
 }

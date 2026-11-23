@@ -30,6 +30,10 @@
   @apply text-emerald-400;
 }
 
+.transfer-console__line--skipped {
+  @apply text-amber-300;
+}
+
 .transfer-console__line--error {
   @apply text-orange-400;
 }
