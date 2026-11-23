@@ -1,0 +1,32 @@
+{
+  "name": "drive-to-blob",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicação Next.js que copia arquivos de uma pasta do Google Drive para um contêiner do Azure Blob Storage.",
+  "author": "redlintles",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.34.0",
+    "@googleapis/drive": "^27.1.0",
+    "google-auth-library": "^11.3.4",
+    "next": "^16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.6",
+    "tailwindcss": "^4.3.5"
+  }
+}
