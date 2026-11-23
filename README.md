@@ -20,9 +20,10 @@ Aplicação web em **Next.js** que copia os arquivos de uma pasta do **Google Dr
 
 | Camada      | Tecnologia                                        |
 | ----------- | ------------------------------------------------- |
+| Linguagem   | TypeScript (modo `strict`)                        |
 | Framework   | Next.js (App Router) + React                      |
 | Estilização | Tailwind CSS v4 via `@apply`, nomenclatura BEM    |
-| Google      | `@googleapis/drive` + `google-auth-library`       |
+| Google      | `@googleapis/drive`                               |
 | Azure       | `@azure/storage-blob`                             |
 | Deploy      | Vercel                                            |
 
@@ -32,26 +33,30 @@ Aplicação web em **Next.js** que copia os arquivos de uma pasta do **Google Dr
 src/
 ├── app/
 │   ├── api/
-│   │   ├── source/route.js        # GET  - lista arquivos do Drive
-│   │   ├── destination/route.js   # GET  - lista blobs do contêiner
-│   │   └── transfer/route.js      # POST - copia Drive → Blob
-│   ├── layout.js
-│   └── page.js
+│   │   ├── source/route.ts        # GET  - lista arquivos do Drive
+│   │   ├── destination/route.ts   # GET  - lista blobs do contêiner
+│   │   └── transfer/route.ts      # POST - copia Drive → Blob
+│   ├── layout.tsx
+│   └── page.tsx
 ├── components/                    # Componentes React (um por pasta)
 ├── hooks/                         # Estado da interface (listas, log, transferência)
 ├── lib/
-│   ├── azure/blobClient.js        # Cliente autenticado do Azure
-│   ├── google/driveClient.js      # Cliente autenticado do Drive
-│   ├── google/googleWorkspaceExport.js
-│   ├── config/env.js              # Leitura e validação das variáveis de ambiente
-│   ├── errors/appErrors.js        # Erros com mensagens seguras para o usuário
-│   ├── http/apiResponse.js        # Padronização das respostas JSON
-│   ├── logger/transferLogger.js   # Log de status no console do servidor
+│   ├── azure/blobClient.ts        # Cliente autenticado do Azure
+│   ├── google/driveClient.ts      # Cliente autenticado do Drive
+│   ├── google/googleWorkspaceExport.ts
+│   ├── config/env.ts              # Leitura e validação das variáveis de ambiente
+│   ├── errors/appErrors.ts        # Erros com mensagens seguras para o usuário
+│   ├── errors/errorDetails.ts     # Leitura tipada de erros das SDKs
+│   ├── http/apiResponse.ts        # Padronização das respostas JSON
+│   ├── logger/transferLogger.ts   # Log de status no console do servidor
 │   └── client/                    # Utilitários usados no navegador
 ├── services/
-│   ├── driveService.js            # listSourceFiles, openFileStream
-│   ├── blobService.js             # listDestinationFiles, uploadStream
-│   └── transferService.js         # transferFiles
+│   ├── driveService.ts            # listSourceFiles, openFileStream
+│   ├── blobService.ts             # listDestinationFiles, uploadStream
+│   └── transferService.ts         # transferFiles
+├── types/
+│   ├── api.ts                     # Formato das respostas da API
+│   └── transfer.ts                # Tipos compartilhados entre servidor e interface
 └── styles/
     ├── globals.css                # Tailwind + tokens de tema
     └── blocks/                    # Um arquivo CSS por bloco BEM
@@ -98,6 +103,16 @@ O código que acessa credenciais fica em módulos marcados com `import "server-o
    ```
 
    Acesse <http://localhost:3000>.
+
+### Scripts
+
+| Comando             | O que faz                                  |
+| ------------------- | ------------------------------------------ |
+| `npm run dev`       | Servidor de desenvolvimento                |
+| `npm run build`     | Build de produção (inclui checagem de tipos) |
+| `npm run start`     | Executa o build de produção                |
+| `npm run lint`      | ESLint                                     |
+| `npm run typecheck` | Verificação de tipos com `tsc --noEmit`    |
 
 ## Como usar
 
