@@ -19,7 +19,7 @@
  * @typedef {Object} TransferResult
  * @property {string} fileId
  * @property {string} fileName
- * @property {"success" | "error"} status
+ * @property {"success" | "skipped" | "error"} status
  * @property {string} message
  * @property {string | null} blobName
  */

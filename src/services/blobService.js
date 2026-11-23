@@ -7,6 +7,8 @@ const UPLOAD_BUFFER_SIZE = 4 * 1024 * 1024;
 const UPLOAD_MAX_CONCURRENCY = 5;
 const UNSAFE_NAME_CHARACTERS = /[\\/\u0000-\u001f\u007f]/g;
 const MAX_BLOB_NAME_LENGTH = 1024;
+const HTTP_CONFLICT = 409;
+const HTTP_PRECONDITION_FAILED = 412;
 
 /**
  * Remove caracteres que criariam "pastas virtuais" ou nomes inválidos no Blob.
@@ -45,7 +47,28 @@ export async function listDestinationFiles() {
 }
 
 /**
- * Envia um stream para o contêiner como Block Blob.
+ * Verifica se já existe um blob com o nome informado no contêiner.
+ * @param {string} blobName
+ */
+export async function blobExists(blobName) {
+  return getContainerClient().getBlockBlobClient(blobName).exists();
+}
+
+/**
+ * Indica se o erro do Azure significa que o blob já existia no momento do envio.
+ */
+export function isBlobAlreadyExistsError(error) {
+  return (
+    error?.statusCode === HTTP_CONFLICT ||
+    error?.statusCode === HTTP_PRECONDITION_FAILED ||
+    error?.code === "BlobAlreadyExists"
+  );
+}
+
+/**
+ * Envia um stream para o contêiner como Block Blob, sem nunca sobrescrever.
+ * A condição If-None-Match: * faz o Azure recusar o envio caso outro processo
+ * tenha criado o blob entre a verificação de existência e o upload.
  * @param {{ blobName: string, stream: NodeJS.ReadableStream, contentType: string, sourceId: string }} params
  * @returns {Promise<string>} URL do blob criado (sem token de acesso).
  */
@@ -55,6 +78,7 @@ export async function uploadStream({ blobName, stream, contentType, sourceId }) 
   await blockBlobClient.uploadStream(stream, UPLOAD_BUFFER_SIZE, UPLOAD_MAX_CONCURRENCY, {
     blobHTTPHeaders: { blobContentType: contentType },
     metadata: { sourcefileid: sourceId },
+    conditions: { ifNoneMatch: "*" },
   });
 
   return blockBlobClient.url.split("?")[0];

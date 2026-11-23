@@ -17,6 +17,9 @@ export const transferLogger = {
   success(fileName, destination) {
     console.log(`${PREFIX} ${timestamp()} SUCESSO "${fileName}" -> ${destination}`);
   },
+  skipped(fileName, reason) {
+    console.warn(`${PREFIX} ${timestamp()} IGNORADO "${fileName}": ${reason}`);
+  },
   failure(fileName, reason) {
     console.error(`${PREFIX} ${timestamp()} ERRO    "${fileName}": ${reason}`);
   },
