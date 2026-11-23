@@ -1,0 +1,7 @@
+.page {
+  @apply min-h-screen bg-surface-50 font-sans text-surface-900 antialiased;
+}
+
+.page__main {
+  @apply mx-auto flex max-w-7xl flex-col gap-8 px-4 py-10 sm:px-8;
+}

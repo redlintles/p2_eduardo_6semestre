@@ -1,0 +1,43 @@
+.transfer-console {
+  @apply overflow-hidden rounded-2xl bg-surface-900 shadow-lg;
+}
+
+.transfer-console__header {
+  @apply flex items-center justify-between border-b border-white/10 px-5 py-3;
+}
+
+.transfer-console__title {
+  @apply text-sm font-semibold text-white;
+}
+
+.transfer-console__output {
+  @apply flex h-64 flex-col gap-1 overflow-y-auto px-5 py-4 font-mono text-xs;
+}
+
+.transfer-console__placeholder {
+  @apply text-surface-500;
+}
+
+.transfer-console__line {
+  @apply flex gap-3 leading-relaxed;
+}
+
+.transfer-console__line--info {
+  @apply text-surface-200;
+}
+
+.transfer-console__line--success {
+  @apply text-emerald-400;
+}
+
+.transfer-console__line--error {
+  @apply text-orange-400;
+}
+
+.transfer-console__time {
+  @apply shrink-0 text-surface-500;
+}
+
+.transfer-console__text {
+  @apply break-all;
+}

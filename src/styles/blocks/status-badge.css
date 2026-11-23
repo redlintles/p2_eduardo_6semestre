@@ -1,0 +1,19 @@
+.status-badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap;
+}
+
+.status-badge--idle {
+  @apply bg-surface-100 text-surface-500;
+}
+
+.status-badge--success {
+  @apply bg-success-50 text-success-600;
+}
+
+.status-badge--error {
+  @apply bg-danger-50 text-danger-600;
+}
+
+.status-badge--unsupported {
+  @apply bg-surface-100 text-surface-500 line-through;
+}

@@ -1,0 +1,7 @@
+.dashboard {
+  @apply flex flex-col gap-8;
+}
+
+.dashboard__panels {
+  @apply grid grid-cols-1 gap-6 xl:grid-cols-2;
+}

@@ -1,0 +1,19 @@
+.app-header {
+  @apply rounded-2xl bg-surface-900 px-6 py-8 text-white shadow-lg sm:px-10;
+}
+
+.app-header__content {
+  @apply flex max-w-3xl flex-col gap-2;
+}
+
+.app-header__eyebrow {
+  @apply text-xs font-semibold tracking-widest text-brand-50/70 uppercase;
+}
+
+.app-header__title {
+  @apply text-3xl font-bold tracking-tight sm:text-4xl;
+}
+
+.app-header__description {
+  @apply text-sm leading-relaxed text-surface-200;
+}

@@ -1,0 +1,51 @@
+.file-table {
+  @apply w-full border-collapse text-left text-sm;
+}
+
+.file-table__head {
+  @apply sticky top-0 z-10 bg-surface-50;
+}
+
+.file-table__heading {
+  @apply px-4 py-2.5 text-xs font-semibold tracking-wide text-surface-500 uppercase;
+}
+
+.file-table__heading--numeric {
+  @apply text-right;
+}
+
+.file-table__heading--checkbox {
+  @apply w-10;
+}
+
+.file-table__row {
+  @apply border-t border-surface-100 transition-colors hover:bg-surface-50;
+}
+
+.file-table__row--selected {
+  @apply bg-brand-50 hover:bg-brand-50;
+}
+
+.file-table__cell {
+  @apply px-4 py-3 align-middle text-surface-700;
+}
+
+.file-table__cell--name {
+  @apply max-w-xs truncate font-medium text-surface-900;
+}
+
+.file-table__cell--numeric {
+  @apply text-right font-mono text-xs whitespace-nowrap;
+}
+
+.file-table__cell--checkbox {
+  @apply w-10;
+}
+
+.file-table__hint {
+  @apply block truncate text-xs font-normal text-surface-500;
+}
+
+.file-table__checkbox {
+  @apply size-4 cursor-pointer accent-brand-600 disabled:cursor-not-allowed;
+}
