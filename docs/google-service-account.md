@@ -51,5 +51,6 @@ O JSON vai em Base64 porque a chave privada tem quebras de linha, que costumam s
 | Mensagem                                   | Causa provável                                       |
 | ------------------------------------------ | ---------------------------------------------------- |
 | `GOOGLE_SERVICE_ACCOUNT_BASE64 é inválida` | Base64 incompleto ou gerado com quebras de linha.    |
-| Lista de origem vazia                      | Pasta não compartilhada com o `client_email`.        |
+| `A pasta de origem não foi encontrada...`  | Pasta não compartilhada com o `client_email`, ou ID incorreto. |
+| `Insufficient Permission` / código 403     | Drive API não ativada no projeto da Service Account. |
 | `Falha na comunicação com o Google Drive`  | Drive API não ativada no projeto, ou ID incorreto.   |
