@@ -22,6 +22,16 @@ export class ValidationError extends AppError {
   }
 }
 
+export class SourceFolderAccessError extends AppError {
+  constructor(serviceAccountEmail) {
+    super(
+      `A pasta de origem não foi encontrada ou não foi compartilhada com ${serviceAccountEmail}. ` +
+        "Compartilhe a pasta com esse e-mail como Leitor.",
+      404,
+    );
+  }
+}
+
 export class ExternalServiceError extends AppError {
   constructor(serviceName, cause) {
     super(`Falha na comunicação com ${serviceName}.`, 502);

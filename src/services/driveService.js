@@ -1,13 +1,50 @@
 import "server-only";
 
 import { getGoogleConfig } from "@/lib/config/env";
-import { ExternalServiceError, ValidationError } from "@/lib/errors/appErrors";
+import {
+  ConfigurationError,
+  ExternalServiceError,
+  SourceFolderAccessError,
+  ValidationError,
+} from "@/lib/errors/appErrors";
 import { getDriveClient } from "@/lib/google/driveClient";
 import { getExportFormat, isGoogleWorkspaceFile } from "@/lib/google/googleWorkspaceExport";
 
 const FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
 const PAGE_SIZE = 100;
 const FILE_FIELDS = "id, name, mimeType, size, modifiedTime";
+const HTTP_NOT_FOUND = 404;
+
+function isNotFound(error) {
+  return error?.code === HTTP_NOT_FOUND || error?.status === HTTP_NOT_FOUND;
+}
+
+/**
+ * Garante que a pasta configurada existe e está visível para a Service Account.
+ * Sem esta verificação, uma pasta não compartilhada seria listada como vazia,
+ * pois a API do Drive não retorna erro para consultas sem resultados visíveis.
+ */
+async function assertFolderAccess(driveClient, folderId, serviceAccountEmail) {
+  let folder;
+
+  try {
+    const response = await driveClient.files.get({
+      fileId: folderId,
+      fields: "id, mimeType",
+      supportsAllDrives: true,
+    });
+    folder = response.data;
+  } catch (error) {
+    if (isNotFound(error)) {
+      throw new SourceFolderAccessError(serviceAccountEmail);
+    }
+    throw new ExternalServiceError("o Google Drive", error);
+  }
+
+  if (folder.mimeType !== FOLDER_MIME_TYPE) {
+    throw new ConfigurationError("GOOGLE_DRIVE_FOLDER_ID não aponta para uma pasta.");
+  }
+}
 
 function buildFolderQuery(folderId) {
   return [
@@ -41,10 +78,12 @@ function toSourceFile(file) {
  * @returns {Promise<import("@/services/types").SourceFile[]>}
  */
 export async function listSourceFiles() {
-  const { folderId } = getGoogleConfig();
+  const { folderId, credentials } = getGoogleConfig();
   const driveClient = getDriveClient();
   const files = [];
   let pageToken;
+
+  await assertFolderAccess(driveClient, folderId, credentials.client_email);
 
   try {
     do {
