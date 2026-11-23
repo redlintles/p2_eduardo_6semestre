@@ -24,3 +24,7 @@ credentials*.json
 # Sistema
 .DS_Store
 *.pem
+
+# TypeScript
+next-env.d.ts
+*.tsbuildinfo
